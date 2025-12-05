@@ -1,7 +1,5 @@
-// --- SEKCJA IMPORTÓW ---
 require('dotenv').config();
 
-// --- SEKCJA KONFIGURACJI ---
 module.exports = {
   development: {
     client: 'pg',
