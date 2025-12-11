@@ -6,6 +6,7 @@ const productRoutes = require('./src/routes/productRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
 const statusRoutes = require('./src/routes/statusRoutes');
 const categoryRoutes = require('./src/routes/categoryRoutes');
+const authRoutes = require('./src/routes/authRoutes')
 const db = require('./src/db');
 
 const PORT = process.env.PORT || 3000;
@@ -16,6 +17,7 @@ app.use('/products', productRoutes);
 app.use('/orders', orderRoutes);
 app.use('/status', statusRoutes);
 app.use('/categories', categoryRoutes);
+app.use('/login', authRoutes);
 
 
 app.listen(PORT, () => {

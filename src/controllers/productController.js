@@ -310,7 +310,6 @@ const getSeoDescription = async (req, res) => {
               }
               h1 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; }
               .meta { font-size: 0.9em; color: #666; margin-bottom: 20px; }
-              /* Style dla treści z AI */
               h2 { color: #d35400; margin-top: 25px; }
               ul { background: #fdfdfd; padding: 15px 40px; border: 1px solid #eee; border-radius: 5px; }
           </style>
@@ -328,7 +327,6 @@ const getSeoDescription = async (req, res) => {
       </html>
     `;
 
-    // 5. Wysłanie HTML do przeglądarki
     res.set('Content-Type', 'text/html'); // Ustawienie nagłówka
     res.send(fullHtml);
 
