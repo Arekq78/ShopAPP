@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require('../../db');
 const { StatusCodes } = require('http-status-codes');
 const problem = require("../utils/problem");
 const axios = require('axios');
@@ -39,8 +39,8 @@ const createProduct = async (req, res) => {
             szczegoly: "Pola 'product_name' oraz 'description' są wymagane i nie mogą być puste.",
             status: StatusCodes.BAD_REQUEST,
             instancja: req.originalUrl,
-            aktualna_nazwa: product_name,
-            aktualny_opis: description
+            product_name: product_name,
+            description: description
           })
         );
 

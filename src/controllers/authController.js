@@ -1,4 +1,4 @@
-const db = require('../db');
+const db = require('../../db');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { StatusCodes } = require('http-status-codes');
@@ -6,7 +6,6 @@ const problem = require("../utils/problem");
 
 require('dotenv').config();
 
-// Generowanie Access Tokena
 const generateAccessToken = (user) => {
   return jwt.sign(
     { id: user.user_id, role: user.role }, 
@@ -15,7 +14,6 @@ const generateAccessToken = (user) => {
   );
 };
 
-// Generowanie Refresh Tokena
 const generateRefreshToken = (user) => {
   return jwt.sign(
     { id: user.user_id, role: user.role }, 
@@ -24,7 +22,6 @@ const generateRefreshToken = (user) => {
   );
 };
 
-// Rejestracja
 const register = async (req, res) => {
   const { username, password, role } = req.body;
 
@@ -37,7 +34,13 @@ const register = async (req, res) => {
       role: role || 'KLIENT'
     });
 
-    res.status(StatusCodes.CREATED).json({ message: "Użytkownik utworzony" });
+    res.status(StatusCodes.CREATED)
+    .json({ 
+      message: "Użytkownik utworzony", 
+      unsername: username,
+      role: role || 'KLIENT'
+    });
+
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(problem.createProblem({
         type: "https://example.com/bledy/blad-rejestracji",
@@ -49,25 +52,13 @@ const register = async (req, res) => {
   }
 };
 
-// Logowanie (zwraca Access Token i Refresh Token)
 const login = async (req, res) => {
   const { username, password } = req.body;
 
   try {
     const user = await db('users').where({ username }).first();
 
-    if (!user) {
-        return res.status(StatusCodes.UNAUTHORIZED).json(problem.createProblem({
-            type: "https://example.com/bledy/bledne-dane",
-            tytul: "Błąd logowania",
-            status: StatusCodes.UNAUTHORIZED,
-            szczegoly: "Nieprawidłowy login lub hasło.",
-            instancja: req.originalUrl
-        }));
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
+    if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.status(StatusCodes.UNAUTHORIZED).json(problem.createProblem({
             type: "https://example.com/bledy/bledne-dane",
             tytul: "Błąd logowania",
@@ -80,6 +71,12 @@ const login = async (req, res) => {
     // Generowanie tokenów
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
+
+    // Zapisanie Refresh Token do bazki
+    await db('refresh_tokens').insert({
+        user_id: user.user_id,
+        token: refreshToken
+    });
 
     // Zwrócenie tokenów
     res.json({
@@ -98,9 +95,8 @@ const login = async (req, res) => {
   }
 };
 
-// Odświeżanie tokena
-const refreshToken = (req, res) => {
-  const { token } = req.body; // { "token": "refresh_token" }
+const refreshToken = async (req, res) => {
+  const { token } = req.body;
 
   if (!token) {
     return res.status(StatusCodes.UNAUTHORIZED).json(problem.createProblem({
@@ -112,20 +108,61 @@ const refreshToken = (req, res) => {
     }));
   }
 
-  jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, user) => {
-    if (err) {
-        return res.status(StatusCodes.FORBIDDEN).json(problem.createProblem({
-            type: "https://example.com/bledy/nieprawidlowy-token",
-            tytul: "Token nieprawidłowy lub wygasł",
+  try {
+    const tokenInDb = await db('refresh_tokens').where({ token }).first();
+    
+    if (!tokenInDb) {
+         return res.status(StatusCodes.FORBIDDEN).json(problem.createProblem({
+            type: "https://example.com/bledy/token-uniewazniony",
+            tytul: "Token unieważniony",
             status: StatusCodes.FORBIDDEN,
-            szczegoly: "Refresh token jest nieważny.",
+            szczegoly: "Ten token został wylogowany lub nie istnieje.",
             instancja: req.originalUrl
         }));
     }
-    const newAccessToken = generateAccessToken({ user_id: user.id, role: user.role });
 
-    res.json({ accessToken: newAccessToken });
-  });
+    jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, userPayload) => {
+      if (err) {
+        return res.status(StatusCodes.FORBIDDEN).json(problem.createProblem({
+            type: "https://example.com/bledy/nieprawidlowy-token",
+            tytul: "Token nieprawidłowy",
+            status: StatusCodes.FORBIDDEN,
+            szczegoly: "Refresh token wygasł lub jest niepoprawny.",
+            instancja: req.originalUrl
+        }));
+      }
+
+      // Wszystko OK -> Generujemy nowy Access Token
+      // userPayload zawiera to co zakodowaliśmy: { id, role, iat, exp }
+      // Musimy przekazać do helpera obiekt z 'user_id' i 'role'
+      const newAccessToken = generateAccessToken({ 
+          user_id: userPayload.id, 
+          role: userPayload.role 
+      });
+      
+      res.json({ accessToken: newAccessToken });
+    });
+
+  } catch (error) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(problem.createProblem({
+        type: "https://example.com/bledy/blad-serwera",
+        tytul: "Błąd serwera",
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        szczegoly: error.message,
+        instancja: req.originalUrl
+      }));
+  }
 };
 
-module.exports = { register, login, refreshToken };
+const logout = async (req, res) => {
+    const { token } = req.body;
+    
+    try {
+        await db('refresh_tokens').where({ token }).del();
+        res.sendStatus(StatusCodes.NO_CONTENT);
+    } catch (error) {
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    }
+};
+
+module.exports = { register, login, refreshToken, logout };

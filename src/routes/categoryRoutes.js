@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const db = require('../../db');
 const {StatusCodes} = require('http-status-codes');
+const auth = require('../utils/authMiddleware');
 
-router.get('/', async (req, res) => {
+router.get('/', auth(), async (req, res) => {
   try {
     const categories = await db('categories').select('*');
     res.status(StatusCodes.OK).json(categories);
