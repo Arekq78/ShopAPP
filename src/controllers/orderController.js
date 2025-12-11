@@ -100,22 +100,18 @@ const createOrder = async (req, res) => {
 
     // --- TRANSAKCJA (Tworzenie zamówienia) ---
     const result = await db.transaction(async (trx) => {
-      // 1. Wstaw nagłówek zamówienia
-      // Uwaga: Dla pewności używamy tablicy w destrukturyzacji, bo returning zwraca tablicę
       const [newOrder] = await trx('orders')
         .insert({
           customer_name,
           email,
           phone,
-          status_id: 1, // Zakładamy 1 = NIEZATWIERDZONE / NOWE
+          status_id: 1, 
           order_date: new Date()
         })
         .returning('order_id');
 
-      const orderId = newOrder.order_id || newOrder; // Obsługa różnic w wersjach knex/pg
+      const orderId = newOrder.order_id || newOrder;
 
-      // 2. Wstaw pozycje zamówienia
-      // Mapujemy foundProducts dla szybkiego dostępu do ceny
       const priceMap = {};
       foundProducts.forEach(fp => {
         priceMap[fp.product_id] = fp.price;
@@ -151,7 +147,6 @@ const createOrder = async (req, res) => {
   }
 };
 
-
 const getOrders = async (req, res) => {
   try {
     const orders = await db('orders')
@@ -163,10 +158,10 @@ const getOrders = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
       problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd wewnętrzny serwera",
+        tytul: "Błąd pobierania zamówień",
         szczegoly: error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl,
+        instancja: req.originalUrl
       })
     );
   }
@@ -177,14 +172,53 @@ const updateOrderStatus = async (req, res) => {
     const { new_status_id } = req.body;
 
     try {
-        const currentOrder = await db('orders').where({ order_id: id }).first();
+        const currentOrder = await db('orders')
+            .join('order_status', 'orders.status_id', 'order_status.status_id')
+            .where({ 'orders.order_id': id })
+            .select('orders.*', 'order_status.status_name') // Dodajemy status_name
+            .first();
         
         if (!currentOrder) {
-            return res.status(StatusCodes.NOT_FOUND).json({ error: 'Zamówienie nie istnieje' });
+          return res.status(StatusCodes.NOT_FOUND).json(
+            problem.createProblem({
+              type: "https://example.com/bledy/nie-znaleziono",
+              tytul: "Zamówienie nie istnieje",
+              szczegoly: `Nie znaleziono zamówienia o ID: ${id}`,
+              status: StatusCodes.NOT_FOUND,
+              instancja: req.originalUrl,
+              poszukiwane_id: id
+            })
+          );
         }
 
         if (currentOrder.status_id === 3) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Nie można edytować anulowanego zamówienia!' });
+          return res.status(StatusCodes.BAD_REQUEST).json(
+            problem.createProblem({
+              type: "https://example.com/bledy/edycja-zablokowana",
+              tytul: "Zamówienie anulowane",
+              szczegoly: "Nie można zmieniać statusu zamówienia, które zostało już anulowane.",
+              status: StatusCodes.BAD_REQUEST,
+              instancja: req.originalUrl,
+              obecny_status: currentOrder.status_name
+            })
+          );
+        }
+
+        const isRegressive = new_status_id < currentOrder.status_id;
+
+        if (isRegressive) {
+            return res.status(StatusCodes.BAD_REQUEST).json(
+                problem.createProblem({
+                    type: "https://example.com/bledy/nieprawidlowa-zmiana-statusu",
+                    tytul: "Regresja statusu niedozwolona",
+                    szczegoly: `Nie można cofnąć statusu zamówienia z ${currentOrder.status_id} na ${new_status_id}.`,
+                    status: StatusCodes.BAD_REQUEST,
+                    instancja: req.originalUrl,
+                    obecny_status: currentOrder.status_name,
+                    obecny_status_id: currentOrder.status_id,
+                    proponowany_status_id: new_status_id
+                })
+            );
         }
 
         await db('orders')
@@ -194,7 +228,15 @@ const updateOrderStatus = async (req, res) => {
         res.status(StatusCodes.OK).json({ message: 'Status zmieniony' });
 
     } catch (error) {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
+        problem.createProblem({
+          type: "https://example.com/bledy/blad-serwera",
+          tytul: "Błąd zmiany statusu",
+          szczegoly: error.message,
+          status: StatusCodes.INTERNAL_SERVER_ERROR,
+          instancja: req.originalUrl
+        })
+      );
     }
 };
 
@@ -204,8 +246,15 @@ const getAllStatuses = async (req, res) => {
     const statuses = await db('order_status').select('*');
     res.status(StatusCodes.OK).json(statuses);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error.message });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
+        problem.createProblem({
+            type: "https://example.com/bledy/blad-serwera",
+            tytul: "Błąd pobierania statusów",
+            szczegoly: error.message,
+            status: StatusCodes.INTERNAL_SERVER_ERROR,
+            instancja: req.originalUrl
+          })
+    );
   }
 };
-
 module.exports = { createOrder, getOrders, updateOrderStatus, getAllStatuses };
