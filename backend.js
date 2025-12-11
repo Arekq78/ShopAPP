@@ -6,18 +6,21 @@ const productRoutes = require('./src/routes/productRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
 const statusRoutes = require('./src/routes/statusRoutes.js');
 const categoryRoutes = require('./src/routes/categoryRoutes');
-const authRoutes = require('./src/routes/authRoutes')
+const authRoutes = require('./src/routes/authRoutes');
+const adminRoutes = require('./src/routes/adminRoutes');
 const db = require('./db.js');
 
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(express.text({ type: 'text/csv' }));
 
 app.use('/products', productRoutes);
 app.use('/orders', orderRoutes);
 app.use('/status', statusRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/', authRoutes);
+app.use('/admin', adminRoutes);
 
 
 app.listen(PORT, () => {
