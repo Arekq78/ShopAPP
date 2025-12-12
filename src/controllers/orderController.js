@@ -5,6 +5,7 @@ const problem = require("../utils/problem");
 const createOrder = async (req, res) => {
   try {
     const { customer_name, email, phone, products } = req.body;
+    const userId = req.user ? req.user.id : null;
 
     // --- 1. Walidacja danych klienta (Puste pola) ---
     const missingFields = [];
@@ -102,6 +103,7 @@ const createOrder = async (req, res) => {
     const result = await db.transaction(async (trx) => {
       const [newOrder] = await trx('orders')
         .insert({
+          user_id: userId,
           customer_name,
           email,
           phone,
@@ -225,7 +227,7 @@ const updateOrderStatus = async (req, res) => {
             .where({ order_id: id })
             .update({ status_id: new_status_id });
 
-        res.status(StatusCodes.OK).json({ message: 'Status zmieniony' });
+        res.status(StatusCodes.OK).json({ message: 'Status zmieniony',  obecny_status: currentOrder.status_name});
 
     } catch (error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
@@ -239,7 +241,6 @@ const updateOrderStatus = async (req, res) => {
       );
     }
 };
-
 
 const getAllStatuses = async (req, res) => {
   try {
@@ -257,4 +258,120 @@ const getAllStatuses = async (req, res) => {
     );
   }
 };
-module.exports = { createOrder, getOrders, updateOrderStatus, getAllStatuses };
+
+const addOrderOpinion = async (req, res) => {
+  const { id } = req.params; // ID zamówienia
+  const { rating, content } = req.body;
+  const loggedUserId = req.user.id; // ID z tokena JWT (middleware auth)
+
+  try {
+    // Walidacja danych wejściowych (Ocena i Treść)
+    if (!rating || !Number.isInteger(rating) || rating < 1 || rating > 5) {
+      return res.status(StatusCodes.BAD_REQUEST).json(
+        problem.createProblem({
+          type: "https://example.com/bledy/nieprawidlowa-ocena",
+          tytul: "Nieprawidłowa ocena",
+          szczegoly: "Ocena musi być liczbą całkowitą z zakresu 1-5.",
+          status: StatusCodes.BAD_REQUEST,
+          instancja: req.originalUrl,
+          podana_ocena: rating
+        })
+      );
+    }
+
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+      return res.status(StatusCodes.BAD_REQUEST).json(
+        problem.createProblem({
+          type: "https://example.com/bledy/brak-tresci",
+          tytul: "Brak treści opinii",
+          szczegoly: "Treść opinii jest wymagana i nie może być pusta.",
+          status: StatusCodes.BAD_REQUEST,
+          instancja: req.originalUrl
+        })
+      );
+    }
+
+    // Pobranie zamówienia z bazy
+    const order = await db('orders').where({ order_id: id }).first();
+
+    if (!order) {
+      return res.status(StatusCodes.NOT_FOUND).json(
+        problem.createProblem({
+          type: "https://example.com/bledy/nie-znaleziono",
+          tytul: "Zamówienie nie istnieje",
+          szczegoly: `Nie znaleziono zamówienia o ID ${id}.`,
+          status: StatusCodes.NOT_FOUND,
+          instancja: req.originalUrl
+        })
+      );
+    }
+
+    // Weryfikacja właściciela
+    // Sprawdzamy, czy ID użytkownika z tokena zgadza się z ID w zamówieniu
+    if (order.user_id !== loggedUserId) {
+        return res.status(StatusCodes.FORBIDDEN).json(
+            problem.createProblem({
+                type: "https://example.com/bledy/brak-dostepu",
+                tytul: "Brak uprawnień",
+                szczegoly: "Możesz dodać opinię tylko do własnych zamówień.",
+                status: StatusCodes.FORBIDDEN,
+                instancja: req.originalUrl
+            })
+        );
+    }
+
+    // Weryfikacja statusu
+    // ID: 3 = ANULOWANE, 4 = ZREALIZOWANE
+    const ALLOWED_STATUSES = [3, 4];
+    
+    if (!ALLOWED_STATUSES.includes(order.status_id)) {
+        return res.status(StatusCodes.BAD_REQUEST).json(
+            problem.createProblem({
+                type: "https://example.com/bledy/niedozwolony-status",
+                tytul: "Nie można dodać opinii",
+                szczegoly: "Opinie można dodawać tylko do zamówień zrealizowanych lub anulowanych.",
+                status: StatusCodes.BAD_REQUEST,
+                instancja: req.originalUrl,
+                obecny_status_id: order.status_id
+            })
+        );
+    }
+
+    const existingOpinion = await db('order_opinions').where({ order_id: id }).first();
+    if (existingOpinion) {
+        return res.status(StatusCodes.CONFLICT).json( // 409 Conflict
+            problem.createProblem({
+                type: "https://example.com/bledy/duplikat-opinii",
+                tytul: "Opinia już istnieje",
+                szczegoly: "Do tego zamówienia została już dodana opinia.",
+                status: StatusCodes.CONFLICT,
+                instancja: req.originalUrl
+            })
+        );
+    }
+
+    // Dodanie opinii
+    await db('order_opinions').insert({
+        order_id: id,
+        rating: rating,
+        content: content
+    });
+
+    res.status(StatusCodes.CREATED).json({ 
+        message: "Opinia została dodana pomyślnie." 
+    });
+
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
+      problem.createProblem({
+        type: "https://example.com/bledy/blad-serwera",
+        tytul: "Błąd serwera",
+        szczegoly: error.message,
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        instancja: req.originalUrl
+      })
+    );
+  }
+};
+
+module.exports = { createOrder, getOrders, updateOrderStatus, getAllStatuses, addOrderOpinion };

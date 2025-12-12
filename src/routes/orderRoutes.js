@@ -8,5 +8,6 @@ router.get('/statuses', auth('PRACOWNIK'), orderController.getAllStatuses);
 router.patch('/:id', auth('PRACOWNIK'), orderController.updateOrderStatus);
 
 router.post('/', auth('KLIENT'), orderController.createOrder);
+router.post('/:id/opinions', auth('KLIENT'), orderController.addOrderOpinion);
 
 module.exports = router;
