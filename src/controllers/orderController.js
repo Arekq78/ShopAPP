@@ -7,7 +7,7 @@ const createOrder = async (req, res) => {
     const { customer_name, email, phone, products } = req.body;
     const userId = req.user ? req.user.id : null;
 
-    // --- 1. Walidacja danych klienta (Puste pola) ---
+    // Walidacja danych klienta (Puste pola)
     const missingFields = [];
     if (!customer_name) missingFields.push('customer_name');
     if (!email) missingFields.push('email');
@@ -26,7 +26,7 @@ const createOrder = async (req, res) => {
       );
     }
 
-    // --- 2. Walidacja formatu telefonu ---
+    // Walidacja formatu telefonu
     const phoneRegex = /^\+[1-9]\d{7,14}$/;
     if (!phoneRegex.test(phone)) {
       return res.status(StatusCodes.BAD_REQUEST).json(
@@ -42,7 +42,7 @@ const createOrder = async (req, res) => {
       );
     }
 
-    // --- 3. Walidacja listy produktów (czy lista istnieje) ---
+    // Walidacja listy produktów (czy lista istnieje)
     if (!products || !Array.isArray(products) || products.length === 0) {
       return res.status(StatusCodes.BAD_REQUEST).json(
         problem.createProblem({
@@ -55,7 +55,7 @@ const createOrder = async (req, res) => {
       );
     }
 
-    // --- 4. Walidacja ilości produktów (ujemne, zerowe, nieliczbowe) ---
+    // Walidacja ilości produktów (ujemne, zerowe, nieliczbowe)
     for (const item of products) {
       if (!item.quantity || typeof item.quantity !== 'number' || item.quantity <= 0) {
         return res.status(StatusCodes.BAD_REQUEST).json(
@@ -72,7 +72,7 @@ const createOrder = async (req, res) => {
       }
     }
 
-    // --- 5. Walidacja istnienia produktów w bazie ---
+    // Walidacja istnienia produktów w bazie
     // Pobieramy ID wszystkich produktów z requestu
     const requestedProductIds = products.map(p => p.product_id);
     
@@ -99,7 +99,7 @@ const createOrder = async (req, res) => {
       );
     }
 
-    // --- TRANSAKCJA (Tworzenie zamówienia) ---
+    // TRANSAKCJA (Tworzenie zamówienia)
     const result = await db.transaction(async (trx) => {
       const [newOrder] = await trx('orders')
         .insert({
@@ -177,20 +177,37 @@ const updateOrderStatus = async (req, res) => {
         const currentOrder = await db('orders')
             .join('order_status', 'orders.status_id', 'order_status.status_id')
             .where({ 'orders.order_id': id })
-            .select('orders.*', 'order_status.status_name') // Dodajemy status_name
+            .select('orders.*', 'order_status.status_name') 
             .first();
         
         if (!currentOrder) {
-          return res.status(StatusCodes.NOT_FOUND).json(
-            problem.createProblem({
-              type: "https://example.com/bledy/nie-znaleziono",
-              tytul: "Zamówienie nie istnieje",
-              szczegoly: `Nie znaleziono zamówienia o ID: ${id}`,
-              status: StatusCodes.NOT_FOUND,
-              instancja: req.originalUrl,
-              poszukiwane_id: id
-            })
-          );
+            return res.status(StatusCodes.NOT_FOUND).json(
+                problem.createProblem({
+                  type: "https://example.com/bledy/nie-znaleziono",
+                  tytul: "Zamówienie nie istnieje",
+                  szczegoly: `Nie znaleziono zamówienia o ID: ${id}`,
+                  status: StatusCodes.NOT_FOUND,
+                  instancja: req.originalUrl,
+                  poszukiwane_id: id
+                })
+            );
+        }
+
+        const targetStatus = await db('order_status')
+            .where({ status_id: new_status_id })
+            .first();
+
+        if (!targetStatus) {
+             return res.status(StatusCodes.BAD_REQUEST).json(
+                problem.createProblem({
+                    type: "https://example.com/bledy/nieznany-status",
+                    tytul: "Nieznany status docelowy",
+                    szczegoly: `Status o ID ${new_status_id} nie istnieje w bazie.`,
+                    status: StatusCodes.BAD_REQUEST,
+                    instancja: req.originalUrl,
+                    podane_id: new_status_id
+                })
+            );
         }
 
         if (currentOrder.status_id === 3) {
@@ -227,7 +244,11 @@ const updateOrderStatus = async (req, res) => {
             .where({ order_id: id })
             .update({ status_id: new_status_id });
 
-        res.status(StatusCodes.OK).json({ message: 'Status zmieniony',  obecny_status: currentOrder.status_name});
+        res.status(StatusCodes.OK).json({ 
+            wiadomosc: 'Status zamówienia został zmieniony',
+            stary_status: currentOrder.status_name,
+            nowy_status: targetStatus.status_name
+        });
 
     } catch (error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
@@ -260,9 +281,9 @@ const getAllStatuses = async (req, res) => {
 };
 
 const addOrderOpinion = async (req, res) => {
-  const { id } = req.params; // ID zamówienia
+  const { id } = req.params; 
   const { rating, content } = req.body;
-  const loggedUserId = req.user.id; // ID z tokena JWT (middleware auth)
+  const loggedUserId = req.user.id; 
 
   try {
     // Walidacja danych wejściowych (Ocena i Treść)
@@ -324,6 +345,10 @@ const addOrderOpinion = async (req, res) => {
     // ID: 3 = ANULOWANE, 4 = ZREALIZOWANE
     const ALLOWED_STATUSES = [3, 4];
     
+    const targetStatus = await db('order_status')
+            .where({ status_id: order.status_id})
+            .first();
+    
     if (!ALLOWED_STATUSES.includes(order.status_id)) {
         return res.status(StatusCodes.BAD_REQUEST).json(
             problem.createProblem({
@@ -332,7 +357,7 @@ const addOrderOpinion = async (req, res) => {
                 szczegoly: "Opinie można dodawać tylko do zamówień zrealizowanych lub anulowanych.",
                 status: StatusCodes.BAD_REQUEST,
                 instancja: req.originalUrl,
-                obecny_status_id: order.status_id
+                obecny_status: targetStatus
             })
         );
     }
@@ -374,4 +399,43 @@ const addOrderOpinion = async (req, res) => {
   }
 };
 
-module.exports = { createOrder, getOrders, updateOrderStatus, getAllStatuses, addOrderOpinion };
+const getOrdersByStatus = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const statusInfo = await db('order_status')
+        .where({ status_id: id })
+        .first();
+
+    if (!statusInfo) {
+      return res.status(StatusCodes.NOT_FOUND).json(
+        problem.createProblem({
+          type: "https://example.com/bledy/nieznany-status",
+          tytul: "Status nie istnieje",
+          szczegoly: `W bazie nie zdefiniowano statusu o ID: ${id}.`,
+          status: StatusCodes.NOT_FOUND,
+          instancja: req.originalUrl,
+          poszukiwane_id: id
+        })
+      );
+    }
+
+    const orders = await db('orders')
+      .where({ status_id: id })
+      .select('*'); 
+
+    res.status(StatusCodes.OK).json(orders);
+
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
+      problem.createProblem({
+        type: "https://example.com/bledy/blad-serwera",
+        tytul: "Błąd pobierania zamówień",
+        szczegoly: error.message,
+        status: StatusCodes.INTERNAL_SERVER_ERROR,
+        instancja: req.originalUrl
+      })
+    );
+  }
+};
+module.exports = { createOrder, getOrders, updateOrderStatus, getAllStatuses, addOrderOpinion, getOrdersByStatus };
