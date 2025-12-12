@@ -5,7 +5,7 @@ const { parse } = require('csv-parse/sync');
 
 const initProducts = async (req, res) => {
   try {
-    const countResult = await db('products').count('product_id as count').first();
+    const countResult = await db('products1').count('product_id as count').first();
     const count = parseInt(countResult.count, 10);
 
     if (count > 0) {
@@ -42,10 +42,7 @@ const initProducts = async (req, res) => {
       }
 
     } else if (contentType === 'text/csv') {
-      // Parsowanie CSV
       try {
-        // columns: true sprawia, że pierwszy wiersz to nagłówki kluczy
-        // skip_empty_lines: ignoruje puste linie
         productsToInsert = parse(req.body, { 
           columns: true, 
           skip_empty_lines: true,
@@ -109,7 +106,7 @@ const initProducts = async (req, res) => {
 
     // TRANSKACJA I ZAPIS
     await db.transaction(async (trx) => {
-        // Mapowanie danych na strukturę bazy (bezpiecznik, żeby nie wrzucić śmieci z CSV)
+        // Mapowanie danych na strukturę bazy (żeby nie wrzucić śmieci z CSV)
         const cleanData = productsToInsert.map(p => ({
             product_name: p.product_name,
             description: p.description,
@@ -118,7 +115,7 @@ const initProducts = async (req, res) => {
             category_id: p.category_id
         }));
 
-        await trx('products').insert(cleanData);
+        await trx('products1').insert(cleanData);
     });
 
     res.status(StatusCodes.OK).json({ 

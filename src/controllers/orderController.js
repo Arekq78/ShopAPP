@@ -223,7 +223,7 @@ const updateOrderStatus = async (req, res) => {
           );
         }
 
-        const isRegressive = new_status_id < currentOrder.status_id;
+        const isRegressive = new_status_id <= currentOrder.status_id;
 
         if (isRegressive) {
             return res.status(StatusCodes.BAD_REQUEST).json(
@@ -438,4 +438,5 @@ const getOrdersByStatus = async (req, res) => {
     );
   }
 };
+
 module.exports = { createOrder, getOrders, updateOrderStatus, getAllStatuses, addOrderOpinion, getOrdersByStatus };

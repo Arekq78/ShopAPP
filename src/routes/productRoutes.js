@@ -6,7 +6,7 @@ const auth = require('../utils/authMiddleware');
 
 router.get('/', auth(), productController.getAllProducts);
 router.get('/:id', auth(), productController.getProductById);
-router.get('/:id/seo-description', auth(), productController.getSeoDescription);
+router.get('/:id/seo-description', productController.getSeoDescription);
 
 router.post('/', auth('PRACOWNIK'), productController.createProduct);
 router.put('/:id', auth('PRACOWNIK'), productController.updateProduct);

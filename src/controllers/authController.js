@@ -132,9 +132,6 @@ const refreshToken = async (req, res) => {
         }));
       }
 
-      // Wszystko OK -> Generujemy nowy Access Token
-      // userPayload zawiera to co zakodowaliśmy: { id, role, iat, exp }
-      // Musimy przekazać do helpera obiekt z 'user_id' i 'role'
       const newAccessToken = generateAccessToken({ 
           user_id: userPayload.id, 
           role: userPayload.role 

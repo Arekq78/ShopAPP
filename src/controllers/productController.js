@@ -260,8 +260,6 @@ const getSeoDescription = async (req, res) => {
       Krótki opis techniczny: ${product.description}
     `;
 
-    // Komunikacja z API Groq (lub innym LLM)
-    // Upewnij się, że masz GROQ_API_KEY w zmiennych środowiskowych (.env) - ARO
     const groqResponse = await axios.post(
       'https://api.groq.com/openai/v1/chat/completions',
       {
@@ -282,7 +280,6 @@ const getSeoDescription = async (req, res) => {
 
     let content = groqResponse.data.choices[0]?.message?.content || "";
 
-    // CZYSZCZENIE: Czasami AI i tak doda ```html na początku. Usuwamy to.
     content = content.replace(/```html/g, '').replace(/```/g, '');
 
     const fullHtml = `
@@ -327,7 +324,7 @@ const getSeoDescription = async (req, res) => {
       </html>
     `;
 
-    res.set('Content-Type', 'text/html'); // Ustawienie nagłówka
+    res.set('Content-Type', 'text/html');
     res.send(fullHtml);
 
   } catch (error) {
