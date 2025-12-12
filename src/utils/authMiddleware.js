@@ -11,10 +11,10 @@ const auth = (requiredRole = null) => {
     if (!token) {
       return res.status(StatusCodes.UNAUTHORIZED).json(problem.createProblem({
         type: "https://example.com/bledy/brak-dostepu",
-        tytul: "Brak autoryzacji",
+        title: "Brak autoryzacji",
         status: StatusCodes.UNAUTHORIZED,
-        szczegoly: "Brak tokenu uwierzytelniającego.",
-        instancja: req.originalUrl
+        details: "Brak tokenu uwierzytelniającego.",
+        instance: req.originalUrl
       }));
     }
 
@@ -22,22 +22,22 @@ const auth = (requiredRole = null) => {
       if (err) {
           return res.status(StatusCodes.FORBIDDEN).json(problem.createProblem({
             type: "https://example.com/bledy/dostep-zabroniony",
-            tytul: "Dostęp zabroniony",
+            title: "Dostęp zabroniony",
             status: StatusCodes.FORBIDDEN,
-            szczegoly: "Token jest nieprawidłowy lub wygasł.",
-            instancja: req.originalUrl
+            details: "Token jest nieprawidłowy lub wygasł.",
+            instance: req.originalUrl
           }));
       }
 
       if (requiredRole && user.role !== requiredRole) {
           return res.status(StatusCodes.FORBIDDEN).json(problem.createProblem({
             type: "https://example.com/bledy/brak-uprawnien",
-            tytul: "Brak wystarczających uprawnień",
+            title: "Brak wystarczających uprawnień",
             status: StatusCodes.FORBIDDEN,
-            szczegoly: `Wymagana rola: ${requiredRole}. Twoja rola: ${user.role}.`,
-            instancja: req.originalUrl,
-            wymagana_rola: requiredRole,
-            posiadana_rola: user.role
+            details: `Wymagana rola: ${requiredRole}. Twoja rola: ${user.role}.`,
+            instance: req.originalUrl,
+            required_Role: requiredRole,
+            user_Role: user.role
           }));
       }
 

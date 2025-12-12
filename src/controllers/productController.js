@@ -16,10 +16,10 @@ const getAllProducts = async (req, res) => {
     .json(
       problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd wewnętrzny serwera",
-        szczegoly: error.message,
+        title: "Błąd wewnętrzny serwera",
+        details: error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl,
+        instance: req.originalUrl,
       })
     );
   }
@@ -35,10 +35,10 @@ const createProduct = async (req, res) => {
         .json(
           problem.createProblem({
             type: "https://example.com/bledy/brak-pol",
-            tytul: "Brak wymaganych pól",
-            szczegoly: "Pola 'product_name' oraz 'description' są wymagane i nie mogą być puste.",
+            title: "Brak wymaganych pól",
+            details: "Pola 'product_name' oraz 'description' są wymagane i nie mogą być puste.",
             status: StatusCodes.BAD_REQUEST,
-            instancja: req.originalUrl,
+            instance: req.originalUrl,
             product_name: product_name,
             description: description
           })
@@ -52,12 +52,12 @@ const createProduct = async (req, res) => {
       .json(
         problem.createProblem({
           type: "https://example.com/bledy/bledne-wartosci",
-          tytul: "Błędne wartości pól",
-          szczegoly: "Cena oraz waga muszą być większe od zera.",
+          title: "Błędne wartości pól",
+          details: "Cena oraz waga muszą być większe od zera.",
           status: StatusCodes.BAD_REQUEST,
-          instancja: req.originalUrl,
-          aktualna_cena: price,
-          aktualna_waga: weight
+          instance: req.originalUrl,
+          current_price: price,
+          current_weight: weight
         })
       );
     }
@@ -73,10 +73,10 @@ const createProduct = async (req, res) => {
     .json(
       problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd wewnętrzny serwera",
-        szczegoly: error.message,
+        title: "Błąd wewnętrzny serwera",
+        details: error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl,
+        instance: req.originalUrl,
       })
     );
   }
@@ -94,11 +94,11 @@ const getProductById = async (req, res) => {
       .json(
         problem.createProblem({
           type: "https://example.com/bledy/nie-znaleziono",
-          tytul: "Produkt nieznaleziony",
-          szczegoly: `Nie znaleziono produktu o identyfikatorze: ${id}`,
+          title: "Produkt nieznaleziony",
+          details: `Nie znaleziono produktu o identyfikatorze: ${id}`,
           status: StatusCodes.NOT_FOUND,
-          instancja: req.originalUrl,
-          poszukiwane_id: id
+          instance: req.originalUrl,
+          wanted_id: id
         })
       );
     }
@@ -109,10 +109,10 @@ const getProductById = async (req, res) => {
     .json(
       problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd wewnętrzny serwera",
-        szczegoly: error.message,
+        title: "Błąd wewnętrzny serwera",
+        details: error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl,
+        instance: req.originalUrl,
       })
     );
   }
@@ -132,11 +132,11 @@ const updateProduct = async (req, res) => {
       return res.status(StatusCodes.NOT_FOUND).json(
         problem.createProblem({
           type: "https://example.com/bledy/nie-znaleziono",
-          tytul: "Produkt nieznaleziony",
-          szczegoly: `Nie udało się zaktualizować. Produkt o id ${id} nie istnieje.`,
+          title: "Produkt nieznaleziony",
+          details: `Nie udało się zaktualizować. Produkt o id ${id} nie istnieje.`,
           status: StatusCodes.NOT_FOUND,
-          instancja: req.originalUrl,
-          poszukiwane_id: id
+          instance: req.originalUrl,
+          wanted_id: id
         })
       );
     }
@@ -147,12 +147,12 @@ const updateProduct = async (req, res) => {
         .json(
           problem.createProblem({
             type: "https://example.com/bledy/brak-pol",
-            tytul: "Brak wymaganych pól",
-            szczegoly: "Pola 'product_name' oraz 'description' są wymagane i nie mogą być puste.",
+            title: "Brak wymaganych pól",
+            details: "Pola 'product_name' oraz 'description' są wymagane i nie mogą być puste.",
             status: StatusCodes.BAD_REQUEST,
-            instancja: req.originalUrl,
-            aktualna_nazwa: product_name,
-            aktualny_opis: description
+            instance: req.originalUrl,
+            current_name: product_name,
+            current_description: description
           })
         );
 
@@ -164,12 +164,12 @@ const updateProduct = async (req, res) => {
       .json(
         problem.createProblem({
           type: "https://example.com/bledy/bledne-wartosci",
-          tytul: "Błędne wartości pól",
-          szczegoly: "Cena oraz waga muszą być większe od zera.",
+          title: "Błędne wartości pól",
+          details: "Cena oraz waga muszą być większe od zera.",
           status: StatusCodes.BAD_REQUEST,
-          instancja: req.originalUrl,
-          aktualna_cena: price,
-          aktualna_waga: weight
+          instance: req.originalUrl,
+          current_price: price,
+          current_weight: weight
         })
       );
     }
@@ -180,10 +180,10 @@ const updateProduct = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
       problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd wewnętrzny serwera",
-        szczegoly: error.message,
+        title: "Błąd wewnętrzny serwera",
+        details: error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl,
+        instance: req.originalUrl,
       })
     );
   }
@@ -202,11 +202,11 @@ const deleteProduct = async (req, res) => {
         .json(
           problem.createProblem({
             type: "https://example.com/bledy/nie-znaleziono",
-            tytul: "Produkt nieznaleziony",
-            szczegoly: `Nie udało się usunąć. Produkt o id ${id} nie istnieje.`,
+            title: "Produkt nieznaleziony",
+            details: `Nie udało się usunąć. Produkt o id ${id} nie istnieje.`,
             status: StatusCodes.NOT_FOUND,
-            instancja: req.originalUrl,
-            poszukiwane_id: id
+            instance: req.originalUrl,
+            wanted_id: id
         })
       );
     }
@@ -217,10 +217,10 @@ const deleteProduct = async (req, res) => {
     .json(
       problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd wewnętrzny serwera",
-        szczegoly: error.message,
+        title: "Błąd wewnętrzny serwera",
+        details: error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl,
+        instance: req.originalUrl,
       })
     );
   }
@@ -238,11 +238,11 @@ const getSeoDescription = async (req, res) => {
       return res.status(StatusCodes.NOT_FOUND).json(
         problem.createProblem({
           type: "https://example.com/bledy/nie-znaleziono",
-          tytul: "Produkt nieznaleziony",
-          szczegoly: `Nie znaleziono produktu o identyfikatorze: ${id}`,
+          title: "Produkt nieznaleziony",
+          details: `Nie znaleziono produktu o identyfikatorze: ${id}`,
           status: StatusCodes.NOT_FOUND,
-          instancja: req.originalUrl,
-          poszukiwane_id: id
+          instance: req.originalUrl,
+          wanted_id: id
         })
       );
     }
@@ -333,10 +333,10 @@ const getSeoDescription = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
       problem.createProblem({
         type: isAxiosError ? "https://example.com/bledy/blad-api-ai" : "https://example.com/bledy/blad-serwera",
-        tytul: isAxiosError ? "Błąd generowania opisu AI" : "Błąd wewnętrzny serwera",
-        szczegoly: isAxiosError ? error.response?.data?.error?.message || error.message : error.message,
+        title: isAxiosError ? "Błąd generowania opisu AI" : "Błąd wewnętrzny serwera",
+        details: isAxiosError ? error.response?.data?.error?.message || error.message : error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl,
+        instance: req.originalUrl,
       })
     );
   }

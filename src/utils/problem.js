@@ -1,10 +1,10 @@
-const createProblem = ({ type = "about:blank", tytul, szczegoly, status, instancja, ...dodatkowe }) => ({
+const createProblem = ({ type = "about:blank", title, details, status, instance, ...extras }) => ({
   type,
-  tytul,
-  szczegoly,
+  title,
+  details,
   status,
-  instancja,
-  ...dodatkowe
+  instance,
+  ...extras
 });
 
 module.exports = { createProblem };

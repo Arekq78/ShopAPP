@@ -17,11 +17,11 @@ const createOrder = async (req, res) => {
       return res.status(StatusCodes.BAD_REQUEST).json(
         problem.createProblem({
           type: "https://example.com/bledy/brak-pol",
-          tytul: "Brak wymaganych danych klienta",
-          szczegoly: "Wymagane pola dotyczące klienta są puste.",
+          title: "Brak wymaganych danych klienta",
+          details: "Wymagane pola dotyczące klienta są puste.",
           status: StatusCodes.BAD_REQUEST,
-          instancja: req.originalUrl,
-          brakujące_pola: missingFields
+          instance: req.originalUrl,
+          missing_Fields: missingFields
         })
       );
     }
@@ -32,12 +32,12 @@ const createOrder = async (req, res) => {
       return res.status(StatusCodes.BAD_REQUEST).json(
         problem.createProblem({
           type: "https://example.com/bledy/niepoprawne-dane",
-          tytul: "Niepoprawny format numeru telefonu",
-          szczegoly: "Numer telefonu zawiera niedozwolone znaki, jest złej długości (długość numeru musi być od 7 do 14) albo nie zaczyna się od +.",
+          title: "Niepoprawny format numeru telefonu",
+          details: "Numer telefonu zawiera niedozwolone znaki, jest złej długości (długość numeru musi być od 7 do 14) albo nie zaczyna się od +.",
           status: StatusCodes.BAD_REQUEST,
-          instancja: req.originalUrl,
-          podany_numer: phone,
-          dlugosc_numeru: phone.length
+          instance: req.originalUrl,
+          provided_number: phone,
+          length_number: phone.length
         })
       );
     }
@@ -47,10 +47,10 @@ const createOrder = async (req, res) => {
       return res.status(StatusCodes.BAD_REQUEST).json(
         problem.createProblem({
           type: "https://example.com/bledy/brak-produktow",
-          tytul: "Puste zamówienie",
-          szczegoly: "Zamówienie musi zawierać przynajmniej jeden produkt.",
+          title: "Puste zamówienie",
+          details: "Zamówienie musi zawierać przynajmniej jeden produkt.",
           status: StatusCodes.BAD_REQUEST,
-          instancja: req.originalUrl
+          instance: req.originalUrl
         })
       );
     }
@@ -61,12 +61,12 @@ const createOrder = async (req, res) => {
         return res.status(StatusCodes.BAD_REQUEST).json(
           problem.createProblem({
             type: "https://example.com/bledy/niepoprawna-ilosc",
-            tytul: "Błędna ilość towaru",
-            szczegoly: `Produkt o ID ${item.product_id} ma nieprawidłową ilość (${item.quantity}). Ilość musi być liczbą większą od zera.`,
+            title: "Błędna ilość towaru",
+            details: `Produkt o ID ${item.product_id} ma nieprawidłową ilość (${item.quantity}). Ilość musi być liczbą większą od zera.`,
             status: StatusCodes.BAD_REQUEST,
-            instancja: req.originalUrl,
-            produkt_id: item.product_id,
-            podana_ilosc: item.quantity
+            instance: req.originalUrl,
+            product_id: item.product_id,
+            provided_quantity: item.quantity
           })
         );
       }
@@ -90,11 +90,11 @@ const createOrder = async (req, res) => {
       return res.status(StatusCodes.NOT_FOUND).json(
         problem.createProblem({
           type: "https://example.com/bledy/produkt-nie-istnieje",
-          tytul: "Nieznany produkt",
-          szczegoly: "Próba zamówienia towarów, których nie ma w bazie danych.",
+          title: "Nieznany produkt",
+          details: "Próba zamówienia towarów, których nie ma w bazie danych.",
           status: StatusCodes.NOT_FOUND,
-          instancja: req.originalUrl,
-          brakujące_id_produktow: missingIds
+          instance: req.originalUrl,
+          missing_id_products: missingIds
         })
       );
     }
@@ -140,10 +140,10 @@ const createOrder = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
       problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd wewnętrzny serwera",
-        szczegoly: error.message,
+        title: "Błąd wewnętrzny serwera",
+        details: error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl,
+        instance: req.originalUrl,
       })
     );
   }
@@ -160,10 +160,10 @@ const getOrders = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
       problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd pobierania zamówień",
-        szczegoly: error.message,
+        title: "Błąd pobierania zamówień",
+        details: error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl
+        instance: req.originalUrl
       })
     );
   }
@@ -184,11 +184,11 @@ const updateOrderStatus = async (req, res) => {
             return res.status(StatusCodes.NOT_FOUND).json(
                 problem.createProblem({
                   type: "https://example.com/bledy/nie-znaleziono",
-                  tytul: "Zamówienie nie istnieje",
-                  szczegoly: `Nie znaleziono zamówienia o ID: ${id}`,
+                  title: "Zamówienie nie istnieje",
+                  details: `Nie znaleziono zamówienia o ID: ${id}`,
                   status: StatusCodes.NOT_FOUND,
-                  instancja: req.originalUrl,
-                  poszukiwane_id: id
+                  instance: req.originalUrl,
+                  wanted_id: id
                 })
             );
         }
@@ -201,11 +201,11 @@ const updateOrderStatus = async (req, res) => {
              return res.status(StatusCodes.BAD_REQUEST).json(
                 problem.createProblem({
                     type: "https://example.com/bledy/nieznany-status",
-                    tytul: "Nieznany status docelowy",
-                    szczegoly: `Status o ID ${new_status_id} nie istnieje w bazie.`,
+                    title: "Nieznany status docelowy",
+                    details: `Status o ID ${new_status_id} nie istnieje w bazie.`,
                     status: StatusCodes.BAD_REQUEST,
-                    instancja: req.originalUrl,
-                    podane_id: new_status_id
+                    instance: req.originalUrl,
+                    provided_id: new_status_id
                 })
             );
         }
@@ -214,11 +214,11 @@ const updateOrderStatus = async (req, res) => {
           return res.status(StatusCodes.BAD_REQUEST).json(
             problem.createProblem({
               type: "https://example.com/bledy/edycja-zablokowana",
-              tytul: "Zamówienie anulowane",
-              szczegoly: "Nie można zmieniać statusu zamówienia, które zostało już anulowane.",
+              title: "Zamówienie anulowane",
+              details: "Nie można zmieniać statusu zamówienia, które zostało już anulowane.",
               status: StatusCodes.BAD_REQUEST,
-              instancja: req.originalUrl,
-              obecny_status: currentOrder.status_name
+              instance: req.originalUrl,
+              current_status: currentOrder.status_name
             })
           );
         }
@@ -229,13 +229,13 @@ const updateOrderStatus = async (req, res) => {
             return res.status(StatusCodes.BAD_REQUEST).json(
                 problem.createProblem({
                     type: "https://example.com/bledy/nieprawidlowa-zmiana-statusu",
-                    tytul: "Regresja statusu niedozwolona",
-                    szczegoly: `Nie można cofnąć statusu zamówienia z ${currentOrder.status_id} na ${new_status_id}.`,
+                    title: "Regresja statusu niedozwolona",
+                    details: `Nie można cofnąć statusu zamówienia z ${currentOrder.status_id} na ${new_status_id}.`,
                     status: StatusCodes.BAD_REQUEST,
-                    instancja: req.originalUrl,
-                    obecny_status: currentOrder.status_name,
-                    obecny_status_id: currentOrder.status_id,
-                    proponowany_status_id: new_status_id
+                    instance: req.originalUrl,
+                    current_status: currentOrder.status_name,
+                    current_status_id: currentOrder.status_id,
+                    suggested_new_status_id: new_status_id
                 })
             );
         }
@@ -254,10 +254,10 @@ const updateOrderStatus = async (req, res) => {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
         problem.createProblem({
           type: "https://example.com/bledy/blad-serwera",
-          tytul: "Błąd zmiany statusu",
-          szczegoly: error.message,
+          title: "Błąd zmiany statusu",
+          details: error.message,
           status: StatusCodes.INTERNAL_SERVER_ERROR,
-          instancja: req.originalUrl
+          instance: req.originalUrl
         })
       );
     }
@@ -271,10 +271,10 @@ const getAllStatuses = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
         problem.createProblem({
             type: "https://example.com/bledy/blad-serwera",
-            tytul: "Błąd pobierania statusów",
-            szczegoly: error.message,
+            title: "Błąd pobierania statusów",
+            details: error.message,
             status: StatusCodes.INTERNAL_SERVER_ERROR,
-            instancja: req.originalUrl
+            instance: req.originalUrl
           })
     );
   }
@@ -291,11 +291,11 @@ const addOrderOpinion = async (req, res) => {
       return res.status(StatusCodes.BAD_REQUEST).json(
         problem.createProblem({
           type: "https://example.com/bledy/nieprawidlowa-ocena",
-          tytul: "Nieprawidłowa ocena",
-          szczegoly: "Ocena musi być liczbą całkowitą z zakresu 1-5.",
+          title: "Nieprawidłowa ocena",
+          details: "Ocena musi być liczbą całkowitą z zakresu 1-5.",
           status: StatusCodes.BAD_REQUEST,
-          instancja: req.originalUrl,
-          podana_ocena: rating
+          instance: req.originalUrl,
+          provided_rating: rating
         })
       );
     }
@@ -304,10 +304,10 @@ const addOrderOpinion = async (req, res) => {
       return res.status(StatusCodes.BAD_REQUEST).json(
         problem.createProblem({
           type: "https://example.com/bledy/brak-tresci",
-          tytul: "Brak treści opinii",
-          szczegoly: "Treść opinii jest wymagana i nie może być pusta.",
+          title: "Brak treści opinii",
+          details: "Treść opinii jest wymagana i nie może być pusta.",
           status: StatusCodes.BAD_REQUEST,
-          instancja: req.originalUrl
+          instance: req.originalUrl
         })
       );
     }
@@ -319,10 +319,10 @@ const addOrderOpinion = async (req, res) => {
       return res.status(StatusCodes.NOT_FOUND).json(
         problem.createProblem({
           type: "https://example.com/bledy/nie-znaleziono",
-          tytul: "Zamówienie nie istnieje",
-          szczegoly: `Nie znaleziono zamówienia o ID ${id}.`,
+          title: "Zamówienie nie istnieje",
+          details: `Nie znaleziono zamówienia o ID ${id}.`,
           status: StatusCodes.NOT_FOUND,
-          instancja: req.originalUrl
+          instance: req.originalUrl
         })
       );
     }
@@ -333,10 +333,10 @@ const addOrderOpinion = async (req, res) => {
         return res.status(StatusCodes.FORBIDDEN).json(
             problem.createProblem({
                 type: "https://example.com/bledy/brak-dostepu",
-                tytul: "Brak uprawnień",
-                szczegoly: "Możesz dodać opinię tylko do własnych zamówień.",
+                title: "Brak uprawnień",
+                details: "Możesz dodać opinię tylko do własnych zamówień.",
                 status: StatusCodes.FORBIDDEN,
-                instancja: req.originalUrl
+                instance: req.originalUrl
             })
         );
     }
@@ -353,11 +353,11 @@ const addOrderOpinion = async (req, res) => {
         return res.status(StatusCodes.BAD_REQUEST).json(
             problem.createProblem({
                 type: "https://example.com/bledy/niedozwolony-status",
-                tytul: "Nie można dodać opinii",
-                szczegoly: "Opinie można dodawać tylko do zamówień zrealizowanych lub anulowanych.",
+                title: "Nie można dodać opinii",
+                details: "Opinie można dodawać tylko do zamówień zrealizowanych lub anulowanych.",
                 status: StatusCodes.BAD_REQUEST,
-                instancja: req.originalUrl,
-                obecny_status: targetStatus
+                instance: req.originalUrl,
+                current_status: targetStatus
             })
         );
     }
@@ -367,10 +367,10 @@ const addOrderOpinion = async (req, res) => {
         return res.status(StatusCodes.CONFLICT).json( // 409 Conflict
             problem.createProblem({
                 type: "https://example.com/bledy/duplikat-opinii",
-                tytul: "Opinia już istnieje",
-                szczegoly: "Do tego zamówienia została już dodana opinia.",
+                title: "Opinia już istnieje",
+                details: "Do tego zamówienia została już dodana opinia.",
                 status: StatusCodes.CONFLICT,
-                instancja: req.originalUrl
+                instance: req.originalUrl
             })
         );
     }
@@ -390,10 +390,10 @@ const addOrderOpinion = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
       problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd serwera",
-        szczegoly: error.message,
+        title: "Błąd serwera",
+        details: error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl
+        instance: req.originalUrl
       })
     );
   }
@@ -411,11 +411,11 @@ const getOrdersByStatus = async (req, res) => {
       return res.status(StatusCodes.NOT_FOUND).json(
         problem.createProblem({
           type: "https://example.com/bledy/nieznany-status",
-          tytul: "Status nie istnieje",
-          szczegoly: `W bazie nie zdefiniowano statusu o ID: ${id}.`,
+          title: "Status nie istnieje",
+          details: `W bazie nie zdefiniowano statusu o ID: ${id}.`,
           status: StatusCodes.NOT_FOUND,
-          instancja: req.originalUrl,
-          poszukiwane_id: id
+          instance: req.originalUrl,
+          wanted_id: id
         })
       );
     }
@@ -430,10 +430,10 @@ const getOrdersByStatus = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
       problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd pobierania zamówień",
-        szczegoly: error.message,
+        title: "Błąd pobierania zamówień",
+        details: error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl
+        instance: req.originalUrl
       })
     );
   }

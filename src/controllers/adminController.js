@@ -12,11 +12,11 @@ const initProducts = async (req, res) => {
       return res.status(StatusCodes.CONFLICT).json(
         problem.createProblem({
           type: "https://example.com/bledy/baza-nie-pusta",
-          tytul: "Baza danych nie jest pusta",
-          szczegoly: "Inicjalizacja niemożliwa. W bazie znajdują się już produkty.",
+          title: "Baza danych nie jest pusta",
+          details: "Inicjalizacja niemożliwa. W bazie znajdują się już produkty.",
           status: StatusCodes.CONFLICT,
-          instancja: req.originalUrl,
-          liczba_produktow: count
+          instance: req.originalUrl,
+          number_of_products: count
         })
       );
     }
@@ -32,11 +32,11 @@ const initProducts = async (req, res) => {
          return res.status(StatusCodes.BAD_REQUEST).json(
             problem.createProblem({
                type: "https://example.com/bledy/nieprawidlowy-format",
-               tytul: "Nieprawidłowy format danych",
-               szczegoly: "Przesłane dane JSON muszą być tablicą (listą) obiektów, nawet jeśli przesyłasz tylko jeden produkt.",
+               title: "Nieprawidłowy format danych",
+               details: "Przesłane dane JSON muszą być tablicą (listą) obiektów, nawet jeśli przesyłasz tylko jeden produkt.",
                status: StatusCodes.BAD_REQUEST,
-               instancja: req.originalUrl,
-               wskazowka: "Upewnij się, że dane są objęte nawiasami kwadratowymi [ ... ]."
+               instance: req.originalUrl,
+               tip: "Upewnij się, że dane są objęte nawiasami kwadratowymi [ ... ]."
             })
          );
       }
@@ -61,10 +61,10 @@ const initProducts = async (req, res) => {
         return res.status(StatusCodes.BAD_REQUEST).json(
           problem.createProblem({
             type: "https://example.com/bledy/niepoprawny-csv",
-            tytul: "Błąd parsowania CSV",
-            szczegoly: "Przesłany plik CSV ma niepoprawny format.",
+            title: "Błąd parsowania CSV",
+            details: "Przesłany plik CSV ma niepoprawny format.",
             status: StatusCodes.BAD_REQUEST,
-            instancja: req.originalUrl
+            instance: req.originalUrl
           })
         );
       }
@@ -72,10 +72,10 @@ const initProducts = async (req, res) => {
       return res.status(StatusCodes.UNSUPPORTED_MEDIA_TYPE).json(
         problem.createProblem({
             type: "https://example.com/bledy/nieobsługiwany-format",
-            tytul: "Nieobsługiwany format danych",
-            szczegoly: "Obsługiwane formaty to application/json lub text/csv.",
+            title: "Nieobsługiwany format danych",
+            details: "Obsługiwane formaty to application/json lub text/csv.",
             status: StatusCodes.UNSUPPORTED_MEDIA_TYPE,
-            instancja: req.originalUrl
+            instance: req.originalUrl
         })
       );
     }
@@ -95,11 +95,11 @@ const initProducts = async (req, res) => {
         return res.status(StatusCodes.BAD_REQUEST).json(
             problem.createProblem({
                 type: "https://example.com/bledy/nieznana-kategoria",
-                tytul: "Nieznane kategorie",
-                szczegoly: "Nie można dodać produktów przypisanych do nieistniejących kategorii.",
+                title: "Nieznane kategorie",
+                details: "Nie można dodać produktów przypisanych do nieistniejących kategorii.",
                 status: StatusCodes.BAD_REQUEST,
-                instancja: req.originalUrl,
-                brakujace_kategorie_id: missingCategories
+                instance: req.originalUrl,
+                missing_categorie_id: missingCategories
             })
         );
     }
@@ -127,10 +127,10 @@ const initProducts = async (req, res) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(
       problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd wewnętrzny serwera",
-        szczegoly: error.message,
+        title: "Błąd wewnętrzny serwera",
+        details: error.message,
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        instancja: req.originalUrl,
+        instance: req.originalUrl,
       })
     );
   }

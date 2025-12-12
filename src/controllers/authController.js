@@ -44,10 +44,10 @@ const register = async (req, res) => {
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(problem.createProblem({
         type: "https://example.com/bledy/blad-rejestracji",
-        tytul: "Błąd rejestracji",
+        title: "Błąd rejestracji",
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        szczegoly: error.message,
-        instancja: req.originalUrl
+        details: error.message,
+        instance: req.originalUrl
     }));
   }
 };
@@ -61,10 +61,10 @@ const login = async (req, res) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
         return res.status(StatusCodes.UNAUTHORIZED).json(problem.createProblem({
             type: "https://example.com/bledy/bledne-dane",
-            tytul: "Błąd logowania",
+            title: "Błąd logowania",
             status: StatusCodes.UNAUTHORIZED,
-            szczegoly: "Nieprawidłowy login lub hasło.",
-            instancja: req.originalUrl
+            details: "Nieprawidłowy login lub hasło.",
+            instance: req.originalUrl
         }));
     }
 
@@ -87,10 +87,10 @@ const login = async (req, res) => {
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd serwera",
+        title: "Błąd serwera",
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        szczegoly: error.message,
-        instancja: req.originalUrl
+        details: error.message,
+        instance: req.originalUrl
     }));
   }
 };
@@ -101,10 +101,10 @@ const refreshToken = async (req, res) => {
   if (!token) {
     return res.status(StatusCodes.UNAUTHORIZED).json(problem.createProblem({
         type: "https://example.com/bledy/brak-tokena",
-        tytul: "Brak tokena",
+        title: "Brak tokena",
         status: StatusCodes.UNAUTHORIZED,
-        szczegoly: "Nie podano refresh tokena.",
-        instancja: req.originalUrl
+        details: "Nie podano refresh tokena.",
+        instance: req.originalUrl
     }));
   }
 
@@ -114,10 +114,10 @@ const refreshToken = async (req, res) => {
     if (!tokenInDb) {
          return res.status(StatusCodes.FORBIDDEN).json(problem.createProblem({
             type: "https://example.com/bledy/token-uniewazniony",
-            tytul: "Token unieważniony",
+            title: "Token unieważniony",
             status: StatusCodes.FORBIDDEN,
-            szczegoly: "Ten token został wylogowany lub nie istnieje.",
-            instancja: req.originalUrl
+            details: "Ten token został wylogowany lub nie istnieje.",
+            instance: req.originalUrl
         }));
     }
 
@@ -125,10 +125,10 @@ const refreshToken = async (req, res) => {
       if (err) {
         return res.status(StatusCodes.FORBIDDEN).json(problem.createProblem({
             type: "https://example.com/bledy/nieprawidlowy-token",
-            tytul: "Token nieprawidłowy",
+            title: "Token nieprawidłowy",
             status: StatusCodes.FORBIDDEN,
-            szczegoly: "Refresh token wygasł lub jest niepoprawny.",
-            instancja: req.originalUrl
+            details: "Refresh token wygasł lub jest niepoprawny.",
+            instance: req.originalUrl
         }));
       }
 
@@ -143,10 +143,10 @@ const refreshToken = async (req, res) => {
   } catch (error) {
       res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(problem.createProblem({
         type: "https://example.com/bledy/blad-serwera",
-        tytul: "Błąd serwera",
+        title: "Błąd serwera",
         status: StatusCodes.INTERNAL_SERVER_ERROR,
-        szczegoly: error.message,
-        instancja: req.originalUrl
+        details: error.message,
+        instance: req.originalUrl
       }));
   }
 };
