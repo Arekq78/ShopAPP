@@ -99,7 +99,7 @@ const initProducts = async (req, res) => {
                 details: "Nie można dodać produktów przypisanych do nieistniejących kategorii.",
                 status: StatusCodes.BAD_REQUEST,
                 instance: req.originalUrl,
-                missing_categorie_id: missingCategories
+                missing_categorie: missingCategories
             })
         );
     }

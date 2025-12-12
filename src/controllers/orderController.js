@@ -21,7 +21,7 @@ const createOrder = async (req, res) => {
           details: "Wymagane pola dotyczące klienta są puste.",
           status: StatusCodes.BAD_REQUEST,
           instance: req.originalUrl,
-          missing_Fields: missingFields
+          missing_fields: missingFields
         })
       );
     }
@@ -37,7 +37,7 @@ const createOrder = async (req, res) => {
           status: StatusCodes.BAD_REQUEST,
           instance: req.originalUrl,
           provided_number: phone,
-          length_number: phone.length
+          number_length: phone.length
         })
       );
     }
@@ -94,7 +94,7 @@ const createOrder = async (req, res) => {
           details: "Próba zamówienia towarów, których nie ma w bazie danych.",
           status: StatusCodes.NOT_FOUND,
           instance: req.originalUrl,
-          missing_id_products: missingIds
+          missing_product_ids: missingIds
         })
       );
     }
@@ -188,7 +188,7 @@ const updateOrderStatus = async (req, res) => {
                   details: `Nie znaleziono zamówienia o ID: ${id}`,
                   status: StatusCodes.NOT_FOUND,
                   instance: req.originalUrl,
-                  wanted_id: id
+                  provided_id: id
                 })
             );
         }
@@ -415,7 +415,7 @@ const getOrdersByStatus = async (req, res) => {
           details: `W bazie nie zdefiniowano statusu o ID: ${id}.`,
           status: StatusCodes.NOT_FOUND,
           instance: req.originalUrl,
-          wanted_id: id
+          provided_id: id
         })
       );
     }

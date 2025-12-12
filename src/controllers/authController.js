@@ -37,7 +37,7 @@ const register = async (req, res) => {
     res.status(StatusCodes.CREATED)
     .json({ 
       message: "Użytkownik utworzony", 
-      unsername: username,
+      username: username,
       role: role || 'KLIENT'
     });
 
