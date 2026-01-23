@@ -49,7 +49,6 @@ const initProducts = async (req, res) => {
           trim: true 
         });
         
-        // CSV często wczytuje liczby jako stringi, trzeba je przekonwertować
         productsToInsert = productsToInsert.map(p => ({
             ...p,
             price: parseFloat(p.price),
@@ -106,7 +105,6 @@ const initProducts = async (req, res) => {
 
     // TRANSKACJA I ZAPIS
     await db.transaction(async (trx) => {
-        // Mapowanie danych na strukturę bazy (żeby nie wrzucić śmieci z CSV)
         const cleanData = productsToInsert.map(p => ({
             product_name: p.product_name,
             description: p.description,
