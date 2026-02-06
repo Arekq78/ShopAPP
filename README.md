@@ -5,10 +5,10 @@ A complete Full-Stack sales system integrating classic e-commerce processes with
 > **Status:** Academic Project
 > This project was built as a university assignment to master Client-Server architecture.
 >
-> It implements the **full scope of requirements**, including:
-> * **Core Logic:** Strict validation of orders, products, and status transitions (State Machine).
+> It implements the full scope of requirements, including:
+> * **Core Logic:** Strict validation of orders, products, and status transitions.
 > * **Error Handling:** Standardized HTTP status codes & problem details.
-> * **Advanced Features:** AI integration for SEO, JWT Authentication (Auth/Refresh), Bulk Data Import (CSV/JSON), and Order Reviews.
+> * **Advanced Features:** AI integration for SEO, JWT Authentication, Bulk Data Import (CSV/JSON), and Order Reviews.
 
 ## Architecture and Technologies
 
@@ -21,9 +21,9 @@ The project is divided into two independent parts:
 
 ## Key Features
 
-1. **Database Automation:** Data migration and seeding system (Knex.js).
+1. **Database Automation:** Data migration and seeding system.
 2. **AI SEO Generator:** Automatic creation of HTML product descriptions using LLM.
-3. **Security:** Full authentication (JWT) and Role-Based Access Control.
+3. **Security:** Full authentication and Role-Based Access Control.
 4. **Data Integrity:** Transactional order processing.
 
 ## How to run the project?
@@ -44,7 +44,7 @@ npm install
 # Copy .env.example to .env and fill in database credentials and API keys
 cp .env.example .env
 
-# 3. Database Automation (Migrations + Seed data)
+# 3. Database Automation
 npx knex migrate:latest
 npx knex seed:run
 
